@@ -9,6 +9,7 @@ from jina.excepts import InternalNetworkError
 from jina.helper import get_full_version
 from jina.importer import ImportExtensions
 from jina.logging.logger import JinaLogger
+#from jina.serve.runtimes.gateway.http.models import JinaResponseModelPost
 
 if TYPE_CHECKING:
     from prometheus_client import CollectorRegistry
@@ -170,7 +171,7 @@ def get_fastapi_app(
         @app.post(
             path='/post',
             summary='Post a data request to some endpoint',
-            response_model=JinaResponseModel,
+            #response_model=JinaResponseModel,
             tags=['Debug']
             # do not add response_model here, this debug endpoint should not restricts the response model
         )
@@ -221,7 +222,15 @@ def get_fastapi_app(
                 logger.error(
                     f'Error while getting responses from deployments: {err.details()}'
                 )
-            return result
+            try:
+                # if there is an exception
+                if result["header"]["status"]["exception"]["name"] == "VideoNotFoundError":
+                    response.status_code = status.HTTP_404_NOT_FOUND
+                if result["header"]["status"]["exception"]["name"] == "ConnectionError":
+                    response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+            except:
+                pass                
+            return result["data"][0]["tags"]["response"]
 
     def _generate_exception_header(error: InternalNetworkError):
         import traceback
