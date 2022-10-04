@@ -221,6 +221,14 @@ def get_fastapi_app(
                 logger.error(
                     f'Error while getting responses from deployments: {err.details()}'
                 )
+            try:
+                # if there is an exception
+                if result["header"]["status"]["exception"]["name"] == "VideoNotFoundError":
+                    response.status_code = status.HTTP_404_NOT_FOUND
+                if result["header"]["status"]["exception"]["name"] == "ConnectionError":
+                    response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+            except:
+                pass                
             return result
 
     def _generate_exception_header(error: InternalNetworkError):
