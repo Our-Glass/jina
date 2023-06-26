@@ -1,3 +1,4 @@
+import os
 import argparse
 import json
 from typing import TYPE_CHECKING, Dict, List, Optional
@@ -9,6 +10,9 @@ from jina.excepts import InternalNetworkError
 from jina.helper import get_full_version
 from jina.importer import ImportExtensions
 from jina.logging.logger import JinaLogger
+
+use_swagger = os.environ.get("use_swagger", "false")
+DOCS_URL = "/swagger/index.html" if use_swagger == "true" else "/docs"
 
 if TYPE_CHECKING:
     from jina.serve.streamer import GatewayStreamer
@@ -57,6 +61,7 @@ def get_fastapi_app(
         or 'This is my awesome service. You can set `title` and `description` in your `Flow` or `Gateway` '
         'to customize the title and description.',
         version=__version__,
+        docs_url=DOCS_URL
     )
 
     if cors:
